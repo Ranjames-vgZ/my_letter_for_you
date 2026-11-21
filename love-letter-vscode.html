@@ -1,0 +1,355 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<style>[hidden]{display:none!important} body{margin:0} img{max-width:100%}</style>
+<title>A Letter For You</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Caveat:wght@500;700&family=Special+Elite&family=Lora:ital,wght@0,400;1,400&display=swap">
+<style>
+/* Layout: one centered stage. A sealed airmail envelope sits on a desk; tapping it opens the flap, then the letter replaces it as a full paper sheet. */
+:root {
+  --bg: #9b1b2c;
+  --desk-text: #ffe6e4;
+  --env: #f8dcda;
+  --env-inner: #e3b3b3;
+  --paper: #fff7f6;
+  --ink: #5c1420;
+  --ink-soft: #8c3a46;
+  --red: #d4272f;
+  --blue: #7a1526;
+  --rule: rgba(122, 21, 38, 0.14);
+  --focus: #ffffff;
+  --shadow: rgba(60, 0, 10, 0.4);
+  --font-hand: "Caveat", "Segoe Script", "Bradley Hand", cursive;
+  --font-type: "Special Elite", "Courier New", monospace;
+  --font-text: "Lora", Georgia, serif;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #2b0b11;
+    --desk-text: #f4c4c6;
+    --env: #efd3d3;
+    --env-inner: #cfa0a4;
+    --paper: #f7e3e2;
+    --ink: #5c1420;
+    --ink-soft: #7f3140;
+    --rule: rgba(122, 21, 38, 0.16);
+    --shadow: rgba(0, 0, 0, 0.55);
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #2b0b11;
+  --desk-text: #f4c4c6;
+  --env: #efd3d3;
+  --env-inner: #cfa0a4;
+  --paper: #f7e3e2;
+  --ink: #5c1420;
+  --ink-soft: #7f3140;
+  --rule: rgba(122, 21, 38, 0.16);
+  --shadow: rgba(0, 0, 0, 0.55);
+  color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+html, body { min-height: 100%; }
+body {
+  background: var(--bg);
+  color: var(--desk-text);
+  font-family: var(--font-text);
+  padding-block: 2rem;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  display: flex;
+  justify-content: center;
+}
+.stage { width: 100%; max-width: 30rem; display: flex; flex-direction: column; align-items: center; gap: 1.5rem; min-width: 0; }
+
+.hint { font-family: var(--font-type); font-size: 0.85rem; letter-spacing: 0.12em; text-transform: uppercase; text-align: center; margin: 0; }
+
+/* Envelope */
+.envelope-wrap { width: 100%; perspective: 1200px; transition: opacity 0.5s ease, transform 0.5s ease; }
+.envelope-wrap.gone { opacity: 0; transform: translateY(24px); pointer-events: none; }
+.envelope {
+  all: unset;
+  display: block;
+  position: relative;
+  width: 100%;
+  aspect-ratio: 3 / 2;
+  cursor: pointer;
+  filter: drop-shadow(0 14px 18px var(--shadow));
+  -webkit-tap-highlight-color: transparent;
+}
+.envelope:focus-visible { outline: 3px solid var(--focus); outline-offset: 6px; }
+.env-back, .env-front {
+  position: absolute; inset: 0;
+  border: 7px solid transparent;
+  border-image: repeating-linear-gradient(135deg, var(--red) 0 14px, var(--env) 14px 24px, var(--blue) 24px 38px, var(--env) 38px 48px) 7;
+  background: var(--env);
+}
+.env-back { background: var(--env-inner); }
+.peek {
+  position: absolute; left: 9%; right: 9%; top: 14%; bottom: 12%;
+  background: var(--paper);
+  transition: transform 0.7s cubic-bezier(.3,.7,.3,1) 0.35s;
+}
+.env-front {
+  clip-path: polygon(0 0, 50% 52%, 100% 0, 100% 100%, 0 100%);
+  border-image: none; border: 0;
+  background: linear-gradient(180deg, var(--env), var(--env));
+}
+.env-front::after {
+  content: ""; position: absolute; inset: 0;
+  border: 7px solid transparent;
+  border-image: repeating-linear-gradient(135deg, var(--red) 0 14px, var(--env) 14px 24px, var(--blue) 24px 38px, var(--env) 38px 48px) 7;
+}
+.flap {
+  position: absolute; left: 0; right: 0; top: 0; height: 56%;
+  background: var(--env);
+  clip-path: polygon(0 0, 100% 0, 50% 100%);
+  transform-origin: top center;
+  transition: transform 0.6s ease;
+  z-index: 3;
+  border-top: 7px solid var(--red);
+}
+.opening .flap { transform: rotateX(180deg); z-index: 0; }
+.opening .peek { transform: translateY(-34%); }
+
+.address {
+  position: absolute; z-index: 2; left: 9%; bottom: 14%; right: 36%;
+  font-family: var(--font-hand); font-weight: 700; color: var(--ink);
+  font-size: clamp(1.15rem, 5.4vw, 1.6rem); line-height: 1.1;
+}
+.address small { display: block; font-family: var(--font-type); font-weight: 400; font-size: 0.62rem; letter-spacing: 0.14em; text-transform: uppercase; color: var(--ink-soft); margin-bottom: 0.25rem; }
+.airmail { position: absolute; z-index: 2; left: 9%; top: 52%; font-family: var(--font-type); font-size: 0.6rem; letter-spacing: 0.2em; text-transform: uppercase; color: var(--red); }
+.stamp {
+  position: absolute; z-index: 2; right: 8%; bottom: 14%;
+  width: 22%; aspect-ratio: 4 / 5;
+  background: var(--paper);
+  padding: 7%;
+  display: grid; place-items: center;
+  outline: 2px dashed var(--ink-soft); outline-offset: -4px;
+  color: var(--red);
+}
+.stamp svg { width: 62%; height: auto; }
+.postmark {
+  position: absolute; z-index: 2; right: 22%; bottom: 20%;
+  width: 24%; aspect-ratio: 1;
+  border: 2px solid var(--ink-soft); border-radius: 50%;
+  display: grid; place-items: center; text-align: center;
+  font-family: var(--font-type); font-size: 0.5rem; line-height: 1.2; letter-spacing: 0.08em; text-transform: uppercase;
+  color: var(--ink-soft); transform: rotate(-14deg); opacity: 0.85;
+}
+
+/* Letter */
+.letter {
+  width: 100%;
+  background: var(--paper);
+  color: var(--ink);
+  padding: clamp(1.5rem, 6vw, 2.5rem);
+  box-shadow: 0 18px 30px var(--shadow);
+  border-top: 7px solid var(--red);
+  position: relative;
+  animation: rise 0.8s cubic-bezier(.2,.7,.2,1) both;
+  background-image: repeating-linear-gradient(180deg, transparent 0 2.05rem, var(--rule) 2.05rem calc(2.05rem + 1px));
+  background-position: 0 3.2rem;
+}
+.letter[hidden] { display: none; }
+@keyframes rise { from { opacity: 0; transform: translateY(28px); } to { opacity: 1; transform: none; } }
+.letter .date { font-family: var(--font-type); font-size: 0.78rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--ink-soft); margin: 0 0 1.25rem; text-align: right; }
+.letter h1 { font-family: var(--font-hand); font-size: 2.3rem; font-weight: 700; margin: 0 0 0.5rem; line-height: 1.1; text-wrap: balance; }
+.letter p { font-family: var(--font-hand); font-weight: 500; font-size: clamp(1.35rem, 5.2vw, 1.6rem); line-height: 2.05rem; margin: 0 0 2.05rem; max-width: 34rem; }
+.letter .sign { font-size: 2rem; font-weight: 700; margin-bottom: 0; }
+.letter .ps { font-family: var(--font-type); font-size: 0.85rem; line-height: 1.6; letter-spacing: 0.03em; color: var(--ink-soft); margin: 2rem 0 0; }
+.again { all: unset; font-family: var(--font-type); font-size: 0.8rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--desk-text); cursor: pointer; padding: 0.5rem 0.25rem; border-bottom: 1px solid currentColor; }
+.again:focus-visible { outline: 3px solid var(--focus); outline-offset: 4px; }
+
+/* Photo gallery: swipeable polaroids */
+.memories { width: 100%; display: flex; flex-direction: column; gap: 1rem; min-width: 0; animation: rise 0.8s cubic-bezier(.2,.7,.2,1) 0.2s both; }
+.memories[hidden] { display: none; }
+.memories h2 { font-family: var(--font-hand); font-size: 2rem; font-weight: 700; color: var(--desk-text); margin: 0; text-align: center; }
+.track {
+  position: relative;
+  display: flex; gap: 1rem;
+  overflow-x: auto; scroll-snap-type: x mandatory; -webkit-overflow-scrolling: touch;
+  padding: 1rem 11% 1.5rem;
+  scrollbar-width: none;
+}
+.track::-webkit-scrollbar { display: none; }
+.track:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
+.polaroid {
+  flex: 0 0 78%; max-width: 20rem; margin: 0;
+  scroll-snap-align: center;
+  background: var(--paper); color: var(--ink);
+  padding: 0.75rem 0.75rem 0.5rem;
+  box-shadow: 0 12px 22px var(--shadow);
+  transform: rotate(-1.5deg);
+}
+.polaroid:nth-child(even) { transform: rotate(1.5deg); }
+.photo {
+  aspect-ratio: 4 / 5; width: 100%;
+  background: var(--env-inner);
+  display: grid; place-items: center; text-align: center;
+  color: var(--ink-soft);
+  overflow: hidden;
+}
+.photo img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.photo span { font-family: var(--font-type); font-size: 0.72rem; letter-spacing: 0.12em; text-transform: uppercase; padding: 1rem; }
+.polaroid figcaption { font-family: var(--font-hand); font-weight: 700; font-size: 1.45rem; line-height: 1.3; text-align: center; padding: 0.6rem 0.25rem 0.4rem; }
+.gallery-nav { display: flex; align-items: center; justify-content: center; gap: 0.9rem; }
+.arrow {
+  all: unset; cursor: pointer; width: 2.75rem; height: 2.75rem; border-radius: 50%;
+  display: grid; place-items: center;
+  background: var(--paper); color: var(--ink); box-shadow: 0 4px 10px var(--shadow);
+  font-family: var(--font-type); font-size: 1.4rem; line-height: 1;
+}
+.arrow:focus-visible, .dot:focus-visible { outline: 3px solid var(--focus); outline-offset: 3px; }
+.dots { font-family: var(--font-type); font-size: 0.95rem; letter-spacing: 0.12em; color: var(--desk-text); min-width: 5rem; text-align: center; font-variant-numeric: tabular-nums; }
+.dot { all: unset; cursor: pointer; width: 1.5rem; height: 1.5rem; display: grid; place-items: center; }
+.dot::before { content: ""; width: 0.55rem; height: 0.55rem; border-radius: 50%; background: var(--desk-text); opacity: 0.35; transition: opacity 0.2s, transform 0.2s; }
+.dot[aria-current="true"]::before { opacity: 1; transform: scale(1.35); background: var(--desk-text); }
+
+@media (prefers-reduced-motion: reduce) {
+  .memories { animation: none; }
+  .flap, .peek, .envelope-wrap { transition: none; }
+  .letter { animation: none; }
+}
+</style>
+
+</head>
+<body>
+<main class="stage">
+  <p class="hint" id="hint">A letter is waiting for you</p>
+
+  <div class="envelope-wrap" id="envWrap">
+    <button class="envelope" id="env" type="button" aria-label="Open the letter">
+      <div class="env-back"></div>
+      <div class="peek"></div>
+      <div class="env-front"></div>
+      <div class="flap"></div>
+      <span class="airmail">Par avion &middot; Air mail</span>
+      <div class="address"><small>To</small>The one I love</div>
+      <div class="postmark">Sent with<br>love<br>20 Nov<br>2026</div>
+      <div class="stamp">
+        <svg viewBox="0 0 24 22" aria-hidden="true"><path fill="currentColor" d="M12 21.5 2.6 12.1C-.4 9.1.4 4.2 4.1 2.4c2.7-1.3 5.6-.3 7.9 2.3 2.3-2.6 5.2-3.6 7.9-2.3 3.7 1.8 4.5 6.7 1.5 9.7z"/></svg>
+      </div>
+    </button>
+  </div>
+
+  <article class="letter" id="letter" hidden>
+    <p class="date">20 November 2026</p>
+    <h1>May i Court you?</h1>
+    <p>Isabella I love you so much. i know you already know this, but I really like you and i wanna show u how much u mean to me. i have always enjoy our time talking, playing together (na nawawalan nako ng pake kung manalo or matalo basta ang importante sakin makasama kita),everytime na pinapaalalahanan moko mag pray and so much more.i want to learn new things about you</p>
+    <p>I've always dream of you being on my side. I would love to face the future with you whatever it may hold against us, i wanna grow with you Gia, i want to learn new things with you, learn from our mistakes, i wanna build my future with you.</p>
+    <p>i wanna apologize din sa lahat ng nagawa ko sayo. Alam ko na minsan na iinis kita at kung minsan hindi ako nakaka intindi pasensya na rin sa sobrang pangungulit ko sayo at kung minsan sobrang ang immature ko at kung natatalo tayo sa emL dahil sakin sorry kung minsan nadadamay kita dahil sa insecurities ko. im trying my best to change those things.</p>
+    <p> I wanna say na i dont have any intention to play with your feelings and to hurt you. i dont wanna rush you on anything</p>
+    <p>I want you to know Gia that i always love you and you mean so much to me, i want you to know that your beautifull inside and outside and i love you even with all the flaws you may have. im always here for you Gia late man mag reply but ill try to be with you, you dont have to carry all the burdens you have alone ill always be praying for you. I'm always proud so of you and i love you so much.</p>
+    <p>d ko alam kung paano kita liligawan pereo ill try my best to court you so please bear with me</p>
+    <p class="sign">I love you so much.</p>
+    <p class="ps">From RJ.</p>
+  </article>
+
+  <section class="memories" id="memories" hidden aria-label="Our photos">
+    <h2>A few of our moments</h2>
+    <div class="track" id="track" tabindex="0" role="region" aria-label="Photos, swipe to see more">
+      <figure class="polaroid"><div class="photo"><img src="image9.jpeg"></div><figcaption>The day we met</figcaption></figure>
+      <figure class="polaroid"><div class="photo"><img src="image8.jpeg"></div><figcaption>Our favorite trip</figcaption></figure>
+      <figure class="polaroid"><div class="photo"><img src="image7.jpeg"></div><figcaption>You, laughing</figcaption></figure>
+      <figure class="polaroid"><div class="photo"><img src="image6.jpeg"></div><figcaption>Us, just because</figcaption></figure>
+      <figure class="polaroid"><div class="photo"><img src="image5.jpeg"></div><figcaption>Remember this day?</figcaption></figure>
+      <figure class="polaroid"><div class="photo"><img src="image4.jpeg"></div><figcaption>Your favorite smile</figcaption></figure>
+      <figure class="polaroid"><div class="photo"><img src="image3.jpeg"></div><figcaption>A quiet afternoon</figcaption></figure>
+      <figure class="polaroid"><div class="photo"><img src="image2.jpeg"></div><figcaption>Us at our silliest</figcaption></figure>
+      <figure class="polaroid"><div class="photo"><img src="image1.jpeg"></div><figcaption>Somewhere we loved</figcaption></figure>
+      <figure class="polaroid"><div class="photo"><img src="image10.jpeg"></div><figcaption>Late night talks</figcaption></figure>
+      <figure class="polaroid"><div class="photo"><img src="image11.jpeg"></div><figcaption>The best meal</figcaption></figure>
+      <figure class="polaroid"><div class="photo"><img src="image12.jpeg"></div><figcaption>Look how far we've come</figcaption></figure>
+      <figure class="polaroid"><div class="photo"><img src="image13.jpeg"></div><figcaption>Still my favorite</figcaption></figure>
+      <figure class="polaroid"><div class="photo"><img src="image14.jpeg"></div><figcaption>Our little inside joke</figcaption></figure>
+    </div>
+    <div class="gallery-nav">
+      <button class="arrow" id="prev" type="button" aria-label="Previous photo">&lsaquo;</button>
+      <div class="dots" id="dots"></div>
+      <button class="arrow" id="next" type="button" aria-label="Next photo">&rsaquo;</button>
+    </div>
+  </section>
+
+  <button class="again" id="again" type="button" hidden>Fold it back up</button>
+</main>
+
+<script>
+(function () {
+  var env = document.getElementById('env');
+  var wrap = document.getElementById('envWrap');
+  var letter = document.getElementById('letter');
+  var hint = document.getElementById('hint');
+  var again = document.getElementById('again');
+  var memories = document.getElementById('memories');
+  var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var opened = false;
+
+  function showLetter() {
+    wrap.classList.add('gone');
+    setTimeout(function () {
+      wrap.hidden = true;
+      letter.hidden = false;
+      again.hidden = false;
+      memories.hidden = false;
+      updateDots();
+      hint.textContent = 'Read it slowly';
+      letter.scrollIntoView({ behavior: reduce ? 'auto' : 'smooth', block: 'start' });
+    }, reduce ? 0 : 450);
+  }
+
+  env.addEventListener('click', function () {
+    if (opened) return;
+    opened = true;
+    env.classList.add('opening');
+    wrap.classList.add('opening');
+    setTimeout(showLetter, reduce ? 0 : 1300);
+  });
+
+  again.addEventListener('click', function () {
+    opened = false;
+    letter.hidden = true;
+    again.hidden = true;
+    memories.hidden = true;
+    wrap.hidden = false;
+    wrap.classList.remove('opening', 'gone');
+    env.classList.remove('opening');
+    hint.textContent = 'A letter is waiting for you';
+    window.scrollTo(0, 0);
+  });
+
+  /* Photo gallery */
+  var track = document.getElementById('track');
+  var slides = track.children;
+  var dotsEl = document.getElementById('dots');
+  var dotBtns = [];
+
+  function go(i) {
+    i = Math.max(0, Math.min(slides.length - 1, i));
+    var s = slides[i];
+    track.scrollTo({ left: s.offsetLeft - (track.clientWidth - s.clientWidth) / 2, behavior: reduce ? 'auto' : 'smooth' });
+  }
+  function currentIndex() {
+    var center = track.scrollLeft + track.clientWidth / 2, best = 0, bestDist = Infinity;
+    for (var i = 0; i < slides.length; i++) {
+      var d = Math.abs(slides[i].offsetLeft + slides[i].clientWidth / 2 - center);
+      if (d < bestDist) { bestDist = d; best = i; }
+    }
+    return best;
+  }
+  function updateDots() {
+    dotsEl.textContent = (currentIndex() + 1) + ' / ' + slides.length;
+  }
+  track.addEventListener('scroll', updateDots, { passive: true });
+  document.getElementById('prev').addEventListener('click', function () { go(currentIndex() - 1); });
+  document.getElementById('next').addEventListener('click', function () { go(currentIndex() + 1); });
+  updateDots();
+})();
+</script>
+</body>
+</html>
